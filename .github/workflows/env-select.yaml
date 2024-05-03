@@ -3,7 +3,7 @@ name: Terraform Plan
 on:
   workflow_dispatch:
     inputs:
-        env:
+        target_env:
             type: environment
             description: Select the environment
         group:
@@ -12,13 +12,15 @@ on:
             type: string
   workflow_call:
     inputs:
-        env:
+        target_env:
             type: string
-            description: Selected environment
+            required: true
         group:
             type: string
+            required: true
         random-id:
             type: string
+            required: true
 
 jobs:
   terraform-create-and-destroy:
@@ -29,11 +31,11 @@ jobs:
 
       - name: print environment
         run: | 
-          echo "env selected is ${{ github.event.inputs.env }}"
+          echo "env selected is ${{ inputs.target_env }}"
 
       - name: print env variable output
         run: |
-          echo "Group is ${{ vars.GROUP }} and Random ID is ${{ vars.RANDOM_ID }} and User is ${{ vars.USER }}"
+          echo "Group is ${{ inputs.group }} and Random ID is ${{ inputs.random-id }} and User is ${{ vars.USER }}"
       
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
@@ -53,17 +55,17 @@ jobs:
 
       - name: Terraform workspace new environment and select
         run: |
-          terraform workspace select ${{ github.event.inputs.env }} || terraform workspace new ${{ github.event.inputs.env }}
+          terraform workspace select ${{ inputs.target_env }} || terraform workspace new ${{ inputs.target_env }}
           terraform workspace list
 
       - name: Terraform plan
-        run: terraform plan -var-file=${{ github.event.inputs.env }}.tfvars
+        run: terraform plan -var-file=${{ inputs.target_env }}.tfvars
 
       - name: Terraform apply
-        run: terraform apply -var-file=${{ github.event.inputs.env }}.tfvars -auto-approve
+        run: terraform apply -var-file=${{ inputs.target_env }}.tfvars -auto-approve
 
       - name: Pause 3min to verify bucket creation
         run: sleep 180
 
       - name: Terraform destroy
-        run: terraform destroy -var-file=${{ github.event.inputs.env }}.tfvars -auto-approve
+        run: terraform destroy -var-file=${{ inputs.target_env }}.tfvars -auto-approve
