@@ -89,8 +89,8 @@ jobs:
 
   deploy-terraform-dev:
     needs: [package-scan-npm-audit, package-osc-scan-snyk-scan, package-app-scan-snyk-scan, package-iac-scan-snyk-scan]
-    name: "Create dev terraform"
-    uses: luqmannnn/github-actions-env-selection/env-select.yaml@main
+    name: "Create and delete dev terraform"
+    uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
     with:
         env: "dev"
     secrets: inherit
@@ -98,8 +98,8 @@ jobs:
 
   deploy-terraform-uat:
     needs: [package-scan-npm-audit, package-osc-scan-snyk-scan, package-app-scan-snyk-scan, package-iac-scan-snyk-scan]
-    name: "Create uat terraform"
-    uses: luqmannnn/github-actions-env-selection/env-select.yaml@main
+    name: "Create and delete uat terraform"
+    uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
     with:
         env: "uat"
     secrets: inherit
@@ -107,8 +107,8 @@ jobs:
 
   deploy-terraform-prod:
     needs: [package-scan-npm-audit, package-osc-scan-snyk-scan, package-app-scan-snyk-scan, package-iac-scan-snyk-scan]
-    name: "Create prod terraform"
-    uses: luqmannnn/github-actions-env-selection/env-select.yaml@main
+    name: "Create and delete prod terraform"
+    uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
     with:
         env: "prod"
     secrets: inherit

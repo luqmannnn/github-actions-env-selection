@@ -21,7 +21,7 @@ jobs:
 
       - name: print environment
         run: | 
-          echo "env choice is ${{ github.event.inputs.choice }}"
+          echo "env selected is ${{ github.event.inputs.env }}"
 
       - name: print env variable output
         run: |
@@ -45,17 +45,17 @@ jobs:
 
       - name: Terraform workspace new environment and select
         run: |
-          terraform workspace select ${{ github.event.inputs.choice }} || terraform workspace new ${{ github.event.inputs.choice }}
+          terraform workspace select ${{ github.event.inputs.env }} || terraform workspace new ${{ github.event.inputs.env }}
           terraform workspace list
 
       - name: Terraform plan
-        run: terraform plan -var-file=${{ github.event.inputs.choice }}.tfvars
+        run: terraform plan -var-file=${{ github.event.inputs.env }}.tfvars
 
       - name: Terraform apply
-        run: terraform apply -var-file=${{ github.event.inputs.choice }}.tfvars -auto-approve
+        run: terraform apply -var-file=${{ github.event.inputs.env }}.tfvars -auto-approve
 
       - name: Pause 3min to verify bucket creation
         run: sleep 180
 
       - name: Terraform destroy
-        run: terraform destroy -var-file=${{ github.event.inputs.choice }}.tfvars -auto-approve
+        run: terraform destroy -var-file=${{ github.event.inputs.env }}.tfvars -auto-approve
