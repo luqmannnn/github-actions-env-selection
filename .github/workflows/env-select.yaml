@@ -1,0 +1,61 @@
+name: Terraform Plan
+
+on:
+  workflow_dispatch:
+    inputs:
+        env:
+            type: environment
+            description: Select the environment
+  workflow_call:
+    inputs:
+        env:
+            type: string
+            description: Selected environment
+
+jobs:
+  terraform-create-and-destroy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: print environment
+        run: | 
+          echo "env choice is ${{ github.event.inputs.choice }}"
+
+      - name: print env variable output
+        run: |
+          echo "Group is ${{ vars.GROUP }} and Random ID is ${{ vars.RANDOM_ID }} and User is ${{ vars.USER }}"
+      
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.REGION }}
+
+      - name: Terraform init
+        run: terraform init
+
+      - name: Terraform workspace list
+        run: terraform workspace list
+
+      - name: Terraform workspace new environment and select
+        run: |
+          terraform workspace select ${{ github.event.inputs.choice }} || terraform workspace new ${{ github.event.inputs.choice }}
+          terraform workspace list
+
+      - name: Terraform plan
+        run: terraform plan -var-file=${{ github.event.inputs.choice }}.tfvars
+
+      - name: Terraform apply
+        run: terraform apply -var-file=${{ github.event.inputs.choice }}.tfvars -auto-approve
+
+      - name: Pause 3min to verify bucket creation
+        run: sleep 180
+
+      - name: Terraform destroy
+        run: terraform destroy -var-file=${{ github.event.inputs.choice }}.tfvars -auto-approve
