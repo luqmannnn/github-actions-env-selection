@@ -6,11 +6,19 @@ on:
         env:
             type: environment
             description: Select the environment
+        group:
+            type: string
+        random-id:
+            type: string
   workflow_call:
     inputs:
         env:
             type: string
             description: Selected environment
+        group:
+            type: string
+        random-id:
+            type: string
 
 jobs:
   terraform-create-and-destroy:
