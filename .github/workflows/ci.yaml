@@ -92,7 +92,7 @@ jobs:
     name: "Create and delete dev terraform"
     uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
     with:
-        env: "dev"
+        target_env: "dev"
         group: ${{ vars.GROUP }}
         random-id: ${{ vars.RANDOM_ID }}
     secrets: inherit
@@ -103,7 +103,7 @@ jobs:
     name: "Create and delete uat terraform"
     uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
     with:
-        env: "uat"
+        target_env: "uat"
         group: ${{ vars.GROUP }}
         random-id: ${{ vars.RANDOM_ID }}
     secrets: inherit
@@ -114,7 +114,7 @@ jobs:
     name: "Create and delete prod terraform"
     uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
     with:
-        env: "prod"
+        target_env: "prod"
         group: ${{ vars.GROUP }}
         random-id: ${{ vars.RANDOM_ID }}
     secrets: inherit
