@@ -33,7 +33,7 @@ jobs:
 
       - name: print env variable output
         run: |
-          echo "Group is ${{ vars.GROUP }} and Random ID is ${{ vars.RANDOM_ID }} and User is ${{ vars.USER }}"
+          echo "Group is ${{ github.event.inputs.group }} and Random ID is ${{ github.event.inputs.random-id }} and User is ${{ vars.USER }}"
       
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1

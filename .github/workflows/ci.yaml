@@ -93,6 +93,8 @@ jobs:
     uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
     with:
         env: "dev"
+        group: ${{ vars.GROUP }}
+        random-id: ${{ vars.RANDOM_ID }}
     secrets: inherit
     if: ${{ github.ref_name == 'main' || github.ref_name == 'develop' || startsWith(github.ref_name, 'feature/') }}
 
@@ -102,6 +104,8 @@ jobs:
     uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
     with:
         env: "uat"
+        group: ${{ vars.GROUP }}
+        random-id: ${{ vars.RANDOM_ID }}
     secrets: inherit
     if: ${{ startsWith(github.ref_name, 'release/') }}
 
@@ -111,5 +115,7 @@ jobs:
     uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
     with:
         env: "prod"
+        group: ${{ vars.GROUP }}
+        random-id: ${{ vars.RANDOM_ID }}
     secrets: inherit
     if: ${{ startsWith(github.ref_name, 'release/') }}
