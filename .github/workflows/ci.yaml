@@ -106,7 +106,7 @@ jobs:
     if: ${{ startsWith(github.ref_name, 'release/') }}
 
   deploy-terraform-prod:
-    needs: [package-scan-npm-audit, package-osc-scan-snyk-scan, package-app-scan-snyk-scan, package-iac-scan-snyk-scan]
+    needs: [package-scan-npm-audit, package-osc-scan-snyk-scan, package-app-scan-snyk-scan, package-iac-scan-snyk-scan, deploy-terraform-uat]
     name: "Create and delete prod terraform"
     uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
     with:
