@@ -106,7 +106,7 @@ jobs:
   deploy-image-dev:
     needs: [build-and-test-image]
     name: "Deployed image to dev"
-    uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
+    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
     with:
         target_env: "dev"
         version: "v1.1"
@@ -116,7 +116,7 @@ jobs:
   deploy-image-uat:
     needs: [build-and-test-image]
     name: "Deployed image to uat"
-    uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
+    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
     with:
         target_env: "uat"
         version: "v1.1"
@@ -126,7 +126,7 @@ jobs:
   deploy-image-prod:
     needs: [build-and-test-image, deploy-image-uat]
     name: "Deployed image to prod"
-    uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
+    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
     with:
         target_env: "prod"
         version: "v1.1"
