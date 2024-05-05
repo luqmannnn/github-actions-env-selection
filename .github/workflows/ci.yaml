@@ -1,3 +1,5 @@
+name: Build, Test and Scan
+
 on:
   push:
     branches:
@@ -70,52 +72,63 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-  # We will also use Snyk to perform code scanning of our Terraform IAC files
-
-  package-iac-scan-snyk-scan:
+  build-and-test-image:
     runs-on: ubuntu-latest
-    needs: install-dependencies
+    outputs: 
+        image-name: ${{ steps.docker-build.outputs.image-name }}
+    needs: [package-scan-npm-audit, package-osc-scan-snyk-scan, package-app-scan-snyk-scan]
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - name: Install Snyk CLI
-        run: npm install -g snyk
-      - name: Run Snyk Code Scan And Check Snyk Scan Results
-        uses: snyk/actions/iac@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: "--report --severity-threshold=high --scan=resource-changes"
+        - name: Run docker build
+          id: docker-build
+          run: |
+            echo "image-name=node-js-application" >> "$GITHUB_OUTPUT"
+            docker build -t node-js-application .
+        
+        - name: Print docker image name
+          run: |
+            echo "Image name is ${{ steps.docker-build.outputs.image-name }}"
 
-  deploy-terraform-dev:
-    needs: [package-scan-npm-audit, package-osc-scan-snyk-scan, package-app-scan-snyk-scan, package-iac-scan-snyk-scan]
-    name: "Create and delete dev terraform"
+        - name: Scan docker image
+          id: docker-scout
+          uses: docker/scout-action@main
+          with:
+            command: cves
+            image: ${{ steps.docker-build.outputs.image-name }}
+            only-severities: critical,high
+            exit-code: true
+
+        - name: Publish docker to ECR
+          run: |
+            echo "Simulating docker push"
+            echo "docker tag ${{ steps.docker-build.outputs.image-name }}:v1.1 ecr-endpoint.com/${{ steps.docker-build.outputs.image-name }}:v1.1
+            echo "docker push ecr-endpoint.com/${{ steps.docker-build.outputs.image-name }}:v1.1"
+
+  deploy-image-dev:
+    needs: [build-and-test-image]
+    name: "Deployed image to dev"
     uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
     with:
         target_env: "dev"
-        group: ${{ vars.GROUP }}
-        random-id: ${{ vars.RANDOM_ID }}
+        version: "v1.1"
     secrets: inherit
     if: ${{ github.ref_name == 'main' || github.ref_name == 'develop' || startsWith(github.ref_name, 'feature/') }}
 
-  deploy-terraform-uat:
-    needs: [package-scan-npm-audit, package-osc-scan-snyk-scan, package-app-scan-snyk-scan, package-iac-scan-snyk-scan]
-    name: "Create and delete uat terraform"
+  deploy-image-uat:
+    needs: [build-and-test-image]
+    name: "Deployed image to uat"
     uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
     with:
         target_env: "uat"
-        group: ${{ vars.GROUP }}
-        random-id: ${{ vars.RANDOM_ID }}
+        version: "v1.1"
     secrets: inherit
     if: ${{ startsWith(github.ref_name, 'release/') }}
 
-  deploy-terraform-prod:
-    needs: [package-scan-npm-audit, package-osc-scan-snyk-scan, package-app-scan-snyk-scan, package-iac-scan-snyk-scan, deploy-terraform-uat]
-    name: "Create and delete prod terraform"
+  deploy-image-prod:
+    needs: [build-and-test-image, deploy-image-uat]
+    name: "Deployed image to prod"
     uses: luqmannnn/github-actions-env-selection/.github/workflows/env-select.yaml@main
     with:
         target_env: "prod"
-        group: ${{ vars.GROUP }}
-        random-id: ${{ vars.RANDOM_ID }}
+        version: "v1.1"
     secrets: inherit
     if: ${{ startsWith(github.ref_name, 'release/') }}
