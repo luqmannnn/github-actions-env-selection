@@ -8,7 +8,20 @@ on:
     - release/**
 
 jobs:
+  env-check-dev:
+    environment: dev
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "DEV IMAGE_NAME = ${{ vars.IMAGE_NAME }}" && echo "DEV IMAGE_URL = ${{ vars.IMAGE_URL }}"
+
+  env-check-uat:
+    environment: uat
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "UAT IMAGE_NAME = ${{ vars.IMAGE_NAME }}" && echo "UAT IMAGE_URL = ${{ vars.IMAGE_URL }}"
+
   pre-deploy:
+    needs: [env-check-dev, env-check-uat]
     runs-on: ubuntu-latest
     steps:
       - run: echo "This job is automatically triggered by a ${{ github.event_name }} event."
