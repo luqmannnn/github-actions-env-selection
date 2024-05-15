@@ -1,19 +1,22 @@
 {
-    "name": "serverless-package-scan",
+    "name": "github-actions-env-selection",
     "version": "1.0.0",
-    "description": "",
+    "description": "ecs fargate task",
     "main": "index.js",
     "scripts": {
-      "test": "jest"
+      "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {
       "type": "git",
-      "url": "git+https://github.com/luqmannnn/serverless-package-scan.git"
+      "url": "git+https://github.com/luqmannnn/github-actions-env-selection.git"
     },
     "author": "luqman",
     "license": "ISC",
     "bugs": {
-      "url": "https://github.com/luqmannnn/serverless-package-scan/issues"
+      "url": "https://github.com/luqmannnn/github-actions-env-selection/issues"
     },
-    "homepage": "https://github.com/luqmannnn/serverless-package-scan#readme"
+    "homepage": "https://github.com/luqmannnn/github-actions-env-selection#readme",
+    "dependencies": {
+      "express": "^4.18.2"
+    }
   }
