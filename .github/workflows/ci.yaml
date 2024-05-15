@@ -8,19 +8,51 @@ on:
     - release/**
 
 jobs:
+  env-check-dev:
+    environment: dev
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "DEV IMAGE_NAME = ${{ vars.IMAGE_NAME }}"
+          echo "DEV IMAGE_URL = ${{ vars.IMAGE_URL }}"
+          echo "DEV USER_GROUP = ${{ vars.USER_GROUP }}"
+          echo "DEV REGION = ${{ vars.REGION }}"
+
+  env-check-uat:
+    environment: uat
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "UAT IMAGE_NAME = ${{ vars.IMAGE_NAME }}"
+          echo "UAT IMAGE_URL = ${{ vars.IMAGE_URL }}"
+          echo "UAT USER_GROUP = ${{ vars.USER_GROUP }}"
+          echo "UAT REGION = ${{ vars.REGION }}"
+
+  env-check-qa:
+    environment: qa
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "QA IMAGE_NAME = ${{ vars.IMAGE_NAME }}"
+          echo "QA IMAGE_URL = ${{ vars.IMAGE_URL }}"
+          echo "QA USER_GROUP = ${{ vars.USER_GROUP }}"
+          echo "QA REGION = ${{ vars.REGION }}"
+
+  env-check-prod:
+    environment: prod
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "PROD IMAGE_NAME = ${{ vars.IMAGE_NAME }}"
+          echo "PROD IMAGE_URL = ${{ vars.IMAGE_URL }}"
+          echo "PROD USER_GROUP = ${{ vars.USER_GROUP }}"
+          echo "PROD REGION = ${{ vars.REGION }}"
+
   pre-deploy:
+    needs: [env-check-dev, env-check-uat, env-check-qa, env-check-prod]
     runs-on: ubuntu-latest
     steps:
       - run: echo "This job is automatically triggered by a ${{ github.event_name }} event."
-
-  install-dependencies:
-    runs-on: ubuntu-latest
-    needs: [pre-deploy]
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - name: Run installation of dependencies commands
-        run: npm install
 
   # Perform first level package scanning using npm audit.
   # npm audit information can be found here:
@@ -28,14 +60,12 @@ jobs:
 
   package-scan-npm-audit:
     runs-on: ubuntu-latest
-    needs: install-dependencies
+    needs: pre-deploy
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Run installation of dependencies commands
-        run: npm install
-      - name: Run audit
-        run: npm audit
+      - name: Run npm audit scan
+        run: echo "Use this to run audit scan"
 
   # We will use Snyk to perform open source code scanning of our JavaScript files
   # Ensure that you have registered for a Snyk account
@@ -44,33 +74,23 @@ jobs:
   
   package-osc-scan-snyk-scan:
     runs-on: ubuntu-latest
-    needs: install-dependencies
+    needs: pre-deploy
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Install Snyk CLI
-        run: npm install -g snyk
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high
+        run: echo "Run your Snyk scans here"
 
   # We will also use Snyk to perform application code scanning 
 
   package-app-scan-snyk-scan:
     runs-on: ubuntu-latest
-    needs: install-dependencies
+    needs: pre-deploy
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Install Snyk CLI
-        run: npm install -g snyk
       - name: Run Snyk Code Scan And Check Snyk Scan Results
-        run: snyk code test
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: echo "Run your Snyk scans for app"
 
   build-and-test-image:
     runs-on: ubuntu-latest
@@ -81,27 +101,16 @@ jobs:
         - name: Run docker build
           id: docker-build
           run: |
-            echo "image-name=node-js-application" >> "$GITHUB_OUTPUT"
-            docker build -t node-js-application .
-        
-        - name: Print docker image name
-          run: |
-            echo "Image name is ${{ steps.docker-build.outputs.image-name }}"
+            echo "Build your docker image with vars.IMAGE_NAME"
 
         - name: Scan docker image
           id: docker-scout
-          uses: docker/scout-action@main
-          with:
-            command: cves
-            image: ${{ steps.docker-build.outputs.image-name }}
-            only-severities: critical,high
-            exit-code: true
+          run: echo "Run your image scanning with aquasec or docker scout"
 
         - name: Publish docker to ECR
           run: |
             echo "Simulating docker push"
-            echo "docker tag ${{ steps.docker-build.outputs.image-name }}:v1.1 ecr-endpoint.com/${{ steps.docker-build.outputs.image-name }}:v1.1
-            echo "docker push ecr-endpoint.com/${{ steps.docker-build.outputs.image-name }}:v1.1"
+            echo "Run docker tag and push"
 
   deploy-image-dev:
     needs: [build-and-test-image]
@@ -109,17 +118,26 @@ jobs:
     uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
     with:
         target_env: "dev"
-        version: "v1.1"
+        version: "v1.1" # Sample version only
     secrets: inherit
     if: ${{ github.ref_name == 'main' || github.ref_name == 'develop' || startsWith(github.ref_name, 'feature/') }}
 
+  deploy-image-qa:
+    needs: [deploy-image-dev]
+    name: "Deployed image to qa"
+    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
+    with:
+        target_env: "qa"
+        version: "v1.1" # Sample version only
+    secrets: inherit
+  
   deploy-image-uat:
     needs: [build-and-test-image]
     name: "Deployed image to uat"
     uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
     with:
         target_env: "uat"
-        version: "v1.1"
+        version: "v1.1" # Sample version only
     secrets: inherit
     if: ${{ startsWith(github.ref_name, 'release/') }}
 
@@ -129,6 +147,6 @@ jobs:
     uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
     with:
         target_env: "prod"
-        version: "v1.1"
+        version: "v1.1" # Sample version only
     secrets: inherit
     if: ${{ startsWith(github.ref_name, 'release/') }}
