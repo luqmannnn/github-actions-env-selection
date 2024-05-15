@@ -6,9 +6,15 @@ on:
         target_env:
             type: environment
             description: Select the environment
+        version:
+            type: string
+            description: Select version
   workflow_call:
     inputs:
         target_env:
+            type: string
+            required: true
+        version:
             type: string
             required: true
 
@@ -22,6 +28,10 @@ jobs:
       - name: print environment
         run: | 
           echo "env selected is ${{ inputs.target_env }}"
+
+      - name: print version
+        run: |
+          echo "version selected is ${{ inputs.version }}"
   
   deploy-step:
     runs-on: ubuntu-latest

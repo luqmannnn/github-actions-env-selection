@@ -6,6 +6,7 @@ on:
     - develop
     - feature/**
     - release/**
+    - main
 
 jobs:
   env-check-dev:
