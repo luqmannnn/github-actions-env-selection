@@ -52,7 +52,7 @@ jobs:
 
       - name: Docker build and tag
         run: |
-          docker build -t ${{ vars.IMAGE }} .
+          docker build -t ${{ vars.IMAGE }}:${{ inputs.version }} .
           docker tag ${{ vars.IMAGE }}:${{ inputs.version }} ${{ vars.ECR_URL }}/${{ vars.IMAGE }}:${{ inputs.version }}
 
       - name: Run image scan
