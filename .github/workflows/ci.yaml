@@ -57,13 +57,29 @@ jobs:
     steps:
       - run: echo "This job is automatically triggered by a ${{ github.event_name }} event."
 
-  # Perform first level package scanning using npm audit.
-  # npm audit information can be found here:
-  # https://docs.npmjs.com/cli/v9/commands/npm-audit
+  code-unit-testing:
+    runs-on: ubuntu-latest
+    needs: pre-deploy
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Run installation of dependencies commands
+        run: echo "Run npm install"
+
+  code-vulnerability-scanning:
+    runs-on: ubuntu-latest
+    needs: pre-deploy
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Run vulernability scan
+        run: |
+          echo "To do"
+          echo "Add scanning"
 
   check-tag:
     runs-on: ubuntu-latest
-    needs: pre-deploy
+    needs: [code-unit-testing, code-vulnerability-scanning]
     outputs:
       LATEST_TAG: ${{ steps.get_latest_tag.outputs.LATEST_TAG }}
     steps:
