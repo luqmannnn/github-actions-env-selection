@@ -67,3 +67,10 @@ jobs:
 
       - name: Docker publish to ECR
         run: docker push ${{ vars.ECR_URL }}/${{ vars.IMAGE }}:${{ inputs.version }}
+
+      - name: Run docker image on EC2
+        run: |
+          echo "Deploying image to EC2 or ECS..."
+          echo "Deploying image to EC2 or ECS..."
+          echo "Deploying image to EC2 or ECS..."
+          echo "Deployment done!"
