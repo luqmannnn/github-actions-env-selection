@@ -111,7 +111,7 @@ jobs:
   deploy-image-dev:
     needs: [check-tag, print-tag]
     name: "Deployed image to dev"
-    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yml@main
+    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
     with:
       target_env: "dev"
       version: "latest"
@@ -121,7 +121,7 @@ jobs:
   deploy-image-uat:
     needs: [check-tag, print-tag]
     name: "Deployed image to uat"
-    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yml@main
+    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
     with:
       target_env: "uat"
       version: ${{ needs.check-tag.outputs.LATEST_TAG }}
@@ -131,7 +131,7 @@ jobs:
   deploy-image-prod:
     needs: [check-tag, print-tag, deploy-image-uat]
     name: "Deployed image to prod"
-    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yml@main
+    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
     with:
       target_env: "prod"
       version: ${{ needs.check-tag.outputs.LATEST_TAG }}
