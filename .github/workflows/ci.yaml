@@ -2,6 +2,8 @@ name: Build, Test and Scan
 
 on:
   push:
+    tags:
+    - 'v*'
     branches:
     - develop
     - feature/**
@@ -59,95 +61,30 @@ jobs:
   # npm audit information can be found here:
   # https://docs.npmjs.com/cli/v9/commands/npm-audit
 
-  package-scan-npm-audit:
+  check-tag:
     runs-on: ubuntu-latest
     needs: pre-deploy
+    outputs:
+      LATEST_TAG: ${{ steps.get_latest_tag.outputs.LATEST_TAG }}
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - name: Run npm audit scan
-        run: echo "Use this to run audit scan"
+      - name: Fetch All Tags
+        run: git fetch --tags
 
-  # We will use Snyk to perform open source code scanning of our JavaScript files
-  # Ensure that you have registered for a Snyk account
-  # Grab the API key from your username > API Key
-  # Insert the API key in Github Actions Secret called "SNYK_TOKEN"
+      - name: Get Latest Tag
+        id: get_latest_tag
+        run: | 
+          echo "LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)" >> "$GITHUB_OUTPUT"
+          echo "LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)""
+
+      - name: Output Latest Tag
+        run: echo "The latest tag is ${{ steps.get_latest_tag.outputs.LATEST_TAG }}"
+
+  print-tag:
+    runs-on: ubuntu-latest
+    needs: check-tag
+    steps:
+      - name: Docker tag
+        run: |
+          echo "docker build -t my-application:${{ needs.check-tag.outputs.LATEST_TAG }}"
+
   
-  package-osc-scan-snyk-scan:
-    runs-on: ubuntu-latest
-    needs: pre-deploy
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - name: Run Snyk to check for vulnerabilities
-        run: echo "Run your Snyk scans here"
-
-  # We will also use Snyk to perform application code scanning 
-
-  package-app-scan-snyk-scan:
-    runs-on: ubuntu-latest
-    needs: pre-deploy
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - name: Run Snyk Code Scan And Check Snyk Scan Results
-        run: echo "Run your Snyk scans for app"
-
-  build-and-test-image:
-    runs-on: ubuntu-latest
-    outputs: 
-        image-name: ${{ steps.docker-build.outputs.image-name }}
-    needs: [package-scan-npm-audit, package-osc-scan-snyk-scan, package-app-scan-snyk-scan]
-    steps:
-        - name: Run docker build
-          id: docker-build
-          run: |
-            echo "Build your docker image with vars.IMAGE_NAME"
-
-        - name: Scan docker image
-          id: docker-scout
-          run: echo "Run your image scanning with aquasec or docker scout"
-
-        - name: Publish docker to ECR
-          run: |
-            echo "Simulating docker push"
-            echo "Run docker tag and push"
-
-  deploy-image-dev:
-    needs: [build-and-test-image]
-    name: "Deployed image to dev"
-    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
-    with:
-        target_env: "dev"
-        version: "v1.1" # Sample version only
-    secrets: inherit
-    if: ${{ github.ref_name == 'main' || github.ref_name == 'develop' || startsWith(github.ref_name, 'feature/') }}
-
-  deploy-image-qa:
-    needs: [deploy-image-dev]
-    name: "Deployed image to qa"
-    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
-    with:
-        target_env: "qa"
-        version: "v1.1" # Sample version only
-    secrets: inherit
-  
-  deploy-image-uat:
-    needs: [build-and-test-image]
-    name: "Deployed image to uat"
-    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
-    with:
-        target_env: "uat"
-        version: "v1.1" # Sample version only
-    secrets: inherit
-    if: ${{ startsWith(github.ref_name, 'release/') }}
-
-  deploy-image-prod:
-    needs: [build-and-test-image, deploy-image-uat]
-    name: "Deployed image to prod"
-    uses: luqmannnn/github-actions-env-selection/.github/workflows/cd.yaml@main
-    with:
-        target_env: "prod"
-        version: "v1.1" # Sample version only
-    secrets: inherit
-    if: ${{ startsWith(github.ref_name, 'release/') }}
