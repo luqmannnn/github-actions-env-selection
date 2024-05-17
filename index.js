@@ -1,27 +1,16 @@
-'use strict';
-
 const express = require('express');
 
-// Constants
-const PORT = 8080;
-const HOST = '0.0.0.0';
-const OS = require('os');
-const ENV = 'DEV';
-
-
-// App
 const app = express();
+const PORT = 3000;
+
+// Define a route handler for the root path
 app.get('/', (req, res) => {
-    res.statusCode = 200;
-    const msg = 'Hello from Node 3!';
-    res.send(msg);
+  res.send('Hello, world!');
 });
 
-app.get('/test', (req, res) => {
-    res.statusCode = 200;
-    const msg = 'Hello from /test Node!';
-    res.send(msg);
+// Start the server
+const server = app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-app.listen(PORT, HOST);
-console.log(`Running on http://${HOST}:${PORT}`);
+module.exports = server; // Export the server instance
